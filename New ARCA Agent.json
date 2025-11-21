@@ -1,0 +1,651 @@
+{
+  "name": "New ARCA Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "69753910-3477-4321-bd6e-157c800a4772",
+      "name": "When chat message received",
+      "webhookId": "9244013c-8a23-412a-845c-1ca84bef76ba"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "# Role: Autonomous Regulatory Compliance Analyst (ARCA)\n\nYou are an advanced AI agent named ARCA. Your primary role is to serve as a **Compliance Analyst** for the company. Your goal is to answer questions by prioritizing internal, verified knowledge, and only resorting to external web search when necessary.\n\n## Core Directives\n\n1.  **Strictly Prioritize Internal Knowledge (RAG):** For any question related to **internal company policies, standard operating procedures (SOPs), existing regulatory mandates, or definitions**, you must first attempt to use the **RAG Tool**.\n2.  **External Information Requirement:** Use the **Web Browser Tools** only when the request requires **live, current, or external information** such as new laws, current market trends, news events, or general public data not covered in the internal knowledge base.\n3.  **Comparison and Analysis:** When asked to **compare** an internal policy with a potential new law (Gap Analysis), you must first use the **RAG Tool** to retrieve the internal policy, and then use the **Web Browser Tools** to find the external law, and then provide a conclusive analysis.\n\n## Tools and Usage Instructions\n\n### 1. RAG Tool (Internal Knowledge Base)\n* **Tool Name:** [The actual name of your Pinecone/Supabase RAG tool, e.g., Policy_Knowledge_Search]\n* **Usage:** Use this to search your internal, verified, and certified knowledge base.\n* **Constraint:** If the answer is found using this tool, **do not use the Web Browser Tools**. If the answer is not found, state the RAG Tool failure clearly and then proceed to the Web Browser Tools if appropriate for the query.\n* **RAG Failure Response:** If the RAG Tool is your final source and the answer is not found, politely state: \"I cannot find the required policy or procedure in my internal compliance database.\"\n\n### 2. Web Browser Tools (External Search)\n\n* **Goal:** Use this set of tools to access the live internet for external data.\n* **Start Browser:** **ALWAYS** begin with `Start Browser`. It returns `sessionId` and `windowId`. You **MUST** include these IDs in every subsequent tool call.\n* **Load URL:** Use this to navigate to a specific website.\n* **Query:** Use this to retrieve information, text, or elements from the current web page.\n* **Type / Click:** Use these for interaction (filling forms, pressing buttons).\n* **Think:** Use this tool when you need to reflect on complex multi-step processes or formulate the next web action.\n* **End Session:** **You must ALWAYS USE THIS TOOL BEFORE RESPONDING TO THE HUMAN** after successfully completing the web task.\n\n## Final Output Protocol\n\n* Provide the most accurate and complete answer possible based on the **Trust Hierarchy**.\n* If the required information is found only in the RAG (Internal) tool, the response must cite the policy/document name if available.\n* If the task involved a web browser search, ensure you call `End Session` before responding."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        0
+      ],
+      "id": "7b353c31-185d-458a-b3fd-4eec9864b59a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        272
+      ],
+      "id": "41aaf4f2-7aa0-4143-984b-b789f27fd4fc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8K4ZzFHGQEr5fi4B",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        560
+      ],
+      "id": "d8d9c81e-5797-4ffa-a239-c2eb6ef7870b",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        608
+      ],
+      "id": "ca216f1f-1b37-4766-8037-a2a93e3f6607",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8K4ZzFHGQEr5fi4B",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      },
+      "notes": "use 1024D"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "llama",
+          "mode": "list",
+          "cachedResultName": "llama"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        448
+      ],
+      "id": "577ff9cc-9ed6-4461-9856-5231f1f724be",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "1wRyh867sC3ZuEDB",
+          "name": "PineconeApi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "12mBdvJYm3FH-uH5R8evcVqJfV88zrI6W",
+          "mode": "list",
+          "cachedResultName": "pakistan-ifrs-profile.pdf",
+          "cachedResultUrl": "https://drive.google.com/file/d/12mBdvJYm3FH-uH5R8evcVqJfV88zrI6W/view?usp=drivesdk"
+        },
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        144,
+        448
+      ],
+      "id": "53fb0d88-a550-4192-b549-f62648e0e268",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "8x1wcPio1equ3exN",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        928,
+        128
+      ],
+      "id": "4bb29fb2-a0e7-4992-afc9-c55d15deffaa",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "llama",
+          "mode": "list",
+          "cachedResultName": "llama"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        320
+      ],
+      "id": "44955a5a-9679-41b9-b51a-5ff82db3979e",
+      "name": "Pinecone Vector Store2",
+      "credentials": {
+        "pineconeApi": {
+          "id": "1wRyh867sC3ZuEDB",
+          "name": "PineconeApi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        512
+      ],
+      "id": "b8f06ad0-5faf-4138-8a72-f8ca92473726",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8K4ZzFHGQEr5fi4B",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        336
+      ],
+      "id": "d4460a60-c576-48ae-9133-623b853f928a",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8K4ZzFHGQEr5fi4B",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        496,
+        624
+      ],
+      "id": "17764519-a1f1-488b-a56f-7f02cf964d89",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        448
+      ],
+      "id": "e7ed156c-641f-4e89-b164-feb123ab2cb3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        272
+      ],
+      "id": "fa5e11a3-6ef0-4aab-ab41-0df724c7e76b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        272
+      ],
+      "id": "d57be776-b759-40f3-aa49-4003cbd3a72d",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "NTzFKtU4AihB8o3M",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/NTzFKtU4AihB8o3M",
+          "cachedResultName": "Building a Browser 2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('url', `url of the website that we are visiting`, 'string') }}",
+            "profile_name": "New-n8n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "profile_name",
+              "displayName": "profile_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        272
+      ],
+      "id": "b83109b5-043a-4294-9f66-f4e307a8fd0e",
+      "name": "Call 'Building a Browser 2'"
+    },
+    {
+      "parameters": {
+        "resource": "interaction",
+        "operation": "type",
+        "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Session_ID', `the 'sessionId'returned by the 'Start Browser' tool`, 'string') }}",
+        "windowId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Window_ID', `the 'windowId'returned by the 'Start Browser' tool`, 'string') }}",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "pressEnterKey": true,
+        "elementDescription": "Search bar usually contains a placeholder that says \"search\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtopTool",
+      "typeVersion": 1,
+      "position": [
+        64,
+        272
+      ],
+      "id": "d6fb6a59-b50b-4591-8b9c-ea53e41d412c",
+      "name": "Type text in Airtop",
+      "credentials": {
+        "airtopApi": {
+          "id": "L8EhcPs4ZCfZo2ZX",
+          "name": "Airtop account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "interaction",
+        "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Session_ID', `the 'sessionId' returned by the 'Start Browser' tool`, 'string') }}",
+        "windowId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Window_ID', `the 'windowId' returned by the 'Start Browser' tool`, 'string') }}",
+        "elementDescription": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Element_Description', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtopTool",
+      "typeVersion": 1,
+      "position": [
+        352,
+        272
+      ],
+      "id": "9cb006cf-3a68-4053-b6fb-b82aa7468556",
+      "name": "Click an element in Airtop",
+      "credentials": {
+        "airtopApi": {
+          "id": "L8EhcPs4ZCfZo2ZX",
+          "name": "Airtop account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "extraction",
+        "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Session_ID', `the 'sessionId' returned by the 'Start Browser' tool`, 'string') }}",
+        "windowId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Window_ID', `the 'windowId' returned by the 'Start Browser' tool`, 'string') }}",
+        "prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtopTool",
+      "typeVersion": 1,
+      "position": [
+        512,
+        272
+      ],
+      "id": "a387349a-a69d-4bab-980e-bb57f1905351",
+      "name": "Query page with pagination in Airtop",
+      "credentials": {
+        "airtopApi": {
+          "id": "L8EhcPs4ZCfZo2ZX",
+          "name": "Airtop account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "window",
+        "operation": "load",
+        "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Session_ID', `the 'sessionId' returned by the 'Start Browser' tool`, 'string') }}",
+        "windowId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Window_ID', `the 'windowId'returned by the 'Start Browser' tool`, 'string') }}",
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.airtopTool",
+      "typeVersion": 1,
+      "position": [
+        656,
+        272
+      ],
+      "id": "b49f9e5e-1bc8-4a05-aac1-2abc21574fa2",
+      "name": "Load a page in Airtop",
+      "credentials": {
+        "airtopApi": {
+          "id": "L8EhcPs4ZCfZo2ZX",
+          "name": "Airtop account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "terminate",
+        "sessionId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Session_ID', `the 'sessionId' returned by the 'Start Browser' tool`, 'string') }}"
+      },
+      "type": "n8n-nodes-base.airtopTool",
+      "typeVersion": 1,
+      "position": [
+        800,
+        272
+      ],
+      "id": "99e16f83-dd48-40f4-9edf-c47b4559f304",
+      "name": "Terminate a session in Airtop",
+      "credentials": {
+        "airtopApi": {
+          "id": "L8EhcPs4ZCfZo2ZX",
+          "name": "Airtop account 4"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store2": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Building a Browser 2'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Type text in Airtop": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Click an element in Airtop": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query page with pagination in Airtop": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load a page in Airtop": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Terminate a session in Airtop": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8c4b7bb1-f013-4296-adb4-941c167d1517",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fc2cec586740d404631ba8a0be04b16fe8e9141898b46e7e157befbdbf0d940f"
+  },
+  "id": "B5TbTuxrBcMnFhWV",
+  "tags": []
+}
